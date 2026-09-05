@@ -1,317 +1,172 @@
-\# RazorRecovery.OS: Autonomous Payment Failure Diagnostic \& Guardrailed Recovery Agent
+# RazorRecovery.OS: Autonomous Payment Failure Diagnostic & Guardrailed Recovery Agent
 
+RazorRecovery.OS is an intelligent, dual-layer autonomous revenue recovery engine built to intercept, diagnose, and recover failed or abandoned transactions across digital checkouts. By strictly decoupling probabilistic AI diagnostics from deterministic execution guardrails, the system eliminates unconstrained agent actions while generating authentic recovery payment links via the Razorpay API.
 
+---
 
-An intelligent, dual-layer autonomous revenue recovery runtime designed to salvage dropped e-commerce and SaaS checkouts without unconstrained financial authority. Powered by FastAPI, React/Vite, deterministic guardrail policies, and live Razorpay Payment APIs.
+## Live Cloud Deployments
 
+* **Frontend Dashboard (Production)**: https://razorpay-recovery-ai.vercel.app
+* **Backend API & Swagger Documentation**: https://razorpay-recovery-ai.onrender.com/docs
+* **API Base URL**: https://razorpay-recovery-ai.onrender.com
 
+*(Note: Free-tier instances on Render enter a sleep state after periods of inactivity. Please allow 30 to 50 seconds for the initial cold start when accessing backend routes directly).*
 
-\[!\[Live Demo](https://img.shields.io/badge/Live%20Demo-Vercel-black?style=for-the-badge\&logo=vercel)](https://razorpay-recovery-ai.vercel.app)
+---
 
-\[!\[API Documentation](https://img.shields.io/badge/Swagger%20Docs-Render-46E3B7?style=for-the-badge\&logo=render\&logoColor=black)](https://razorpay-recovery-ai.onrender.com/docs)
+## The Problem: Revenue Leakage in Digital Payments
 
-\[!\[License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](LICENSE)
+Merchants operating at scale lose between 10% and 15% of top-line Gross Merchandise Value (GMV) to failed, timed-out, or abandoned checkout interactions.
 
+Current remediation patterns suffer from structural flaws:
+1. **Blind Auto-Retries**: Automated retry scripts repeatedly hit customer payment rails without understanding root causes, triggering merchant velocity penalties, gateway blacklisting, and customer bank fraud alerts.
+2. **Passive Email Notifications**: Abandoned cart or payment link notifications suffer from low conversion rates, long latency delays, and zero context regarding why the payment originally failed.
+3. **Unchecked Autonomous Agents**: Giving Large Language Models direct, unchecked authority to initiate financial movements or retries introduces unacceptable operational and financial risk.
 
+---
 
-\---
+## The Solution: Dual-Layer Architecture
 
+RazorRecovery.OS separates **Intelligence** from **Authority**:
 
+1. **Layer 1 — Probabilistic AI Diagnostic Engine**:
+   * Inspects transaction metadata, customer velocity history, and raw payment error payloads (`card_authentication_failed`, `upi_temporary_failure`, `user_abandoned`, `insufficient_funds`).
+   * Classifies root causes into distinct failure taxonomies (Transient Network, Authentication Dropout, Behavioral Abandonment, Terminal Liquidity).
+   * Calculates an empirical **Estimated Salvage Probability** score (0% to 100%) and selects a recovery tactic.
 
-\## Live Cloud Deployments
+2. **Layer 2 — Deterministic Policy Guardrails**:
+   * Evaluates the recommended action against strict business constraints before any external call is authorized.
+   * **Retry Cap**: Enforces a strict maximum of 2 recovery attempts per transaction ID.
+   * **Capital Ceilings**: Flags and isolates single transactions exceeding defined transaction limits.
+   * **Escalation Mechanism**: If a transaction breaches safety policies, the engine blocks automatic execution and marks the transaction as `ESCALATED` for human intervention.
 
+3. **Layer 3 — Live Gateway Execution**:
+   * Once validated by policy checks, the service dispatches an authenticated HTTP POST request to the Razorpay API endpoint (`https://api.razorpay.com/v1/payment_links`).
+   * Generates a genuine hosted checkout link (`rzp.io`) linked with exact rupee amounts, dynamic customer metadata, and reconciliation notes.
 
+4. **Layer 4 — Accounting Ledger & Real-Time KPIs**:
+   * Records every state change in an immutable, append-only transaction audit log.
+   * Tracks real-time top-rail financial performance metrics:
+     * **Capital at Risk**: Total value of dropped checkouts currently pending intervention.
+     * **Recovered Revenue**: Total value converted through successful recovery workflows.
+     * **Salvage Efficiency (%)**: Percentage ratio of recovered revenue against total targeted dropped volume.
+     * **Guardrail Invocations**: Counter tracking whenever deterministic policies prevent an unauthorized action.
 
-\* \*\*Frontend Dashboard\*\*: \[https://razorpay-recovery-ai.vercel.app](https://razorpay-recovery-ai.vercel.app)
+---
 
-\* \*\*Backend API \& Swagger Docs\*\*: \[https://razorpay-recovery-ai.onrender.com/docs](https://razorpay-recovery-ai.onrender.com/docs)
+## State Transition Lifecycle
 
+Transactions proceed through a deterministic finite-state machine:
 
+* **FAILED**: Transaction error detected and queued into the transaction stream.
+* **AI DIAGNOSTIC**: Root cause classified, recovery vector decided, salvage confidence assigned.
+* **POLICY VERIFIED**: Guardrail boundaries validated (or blocked and marked as `ESCALATED`).
+* **RECOVERING**: Live Razorpay payment link generated; invoice dispatched to customer.
+* **RECOVERED / EXPIRED**: Customer completes payment via the gateway link, settling capital into recovered revenue.
 
-\---
+---
 
+## Tech Stack & Tooling
 
+* **Backend**: Python 3.11, FastAPI, Uvicorn ASGI, SQLite, SQLAlchemy 2.0, Requests, Pydantic v2
+* **Frontend**: React 18, Vite, TailwindCSS, Lucide React
+* **Integrations**: Razorpay Payment Links API (v1)
+* **Cloud Infrastructure**: Render (Backend Web Service), Vercel (Edge SPA Hosting)
 
-\## Core Problem Statement
+---
 
+## Project Repository Structure
 
-
-Merchants lose 10% to 15% of top-line Gross Merchandise Value (GMV) to silent payment drops, transient network timeouts, and authentication drop-offs. Traditional recovery workflows either:
-
-1\. \*\*Blindly auto-retry\*\*, triggering merchant throttling, gateway penalties, and banking fraud flags.
-
-2\. \*\*Send passive notifications\*\*, yielding low salvage rates and prolonged recovery lag.
-
-
-
-\*\*RazorRecovery.OS\*\* decouples probabilistic diagnostic inference from financial execution authority, ensuring zero unauthorized payment link generation while recovering at-risk capital autonomously.
-
-
-
-\---
-
-
-
-\## System Architecture
-\[ Failed Checkout Event ]
-
-│
-
-▼
-
-┌──────────────────────────────┐
-
-│   01. AI Diagnostic Engine   │  <-- Classifies failure cause (Network, 3DS, Drops)
-
-│   (Probabilistic Inference)  │      Scores salvage probability (0% - 100%)
-
-└──────────────┬───────────────┘
-
-│
-
-▼
-
-┌──────────────────────────────┐
-
-│  02. Policy Guardrails       │  <-- Hard retry bounds (Max: 2)
-
-│   (Deterministic Authority)  │      Transaction value ceilings (INR limits)
-
-└──────────────┬───────────────┘
-
-│
-
-┌────────┴────────┐
-
-\[ Passed Policy ]  \[ Breached Bounds ]
-
-│                 │
-
-│                 ▼
-
-│        ┌─────────────────────────┐
-
-│        │  Automated Escalation   │  <-- Quarantined for human intervention
-
-│        └─────────────────────────┘
-
-▼
-
-┌──────────────────────────────┐
-
-│ 03. Razorpay API Dispatcher  │  <-- Generates dynamic Test Payment Links (rzp.io)
-
-└──────────────┬───────────────┘
-
-│
-
-▼
-
-┌──────────────────────────────┐
-
-│ 04. Immutable Audit \& Ledger │  <-- Real-time KPI yield \& salvage rate analytics
-
-└──────────────────────────────┘
-
-
-
-
-
-\---
-
-
-
-\## Key Features
-
-
-
-\* \*\*AI Diagnostic Inference Engine\*\*: Analyzes failure signals (e.g., `card\_authentication\_failed`, `upi\_temporary\_failure`, `user\_abandoned`), detects transaction patterns, and assigns empirical recovery probability scores.
-
-\* \*\*Deterministic Guardrail Policies\*\*: Financial actions require validation through non-negotiable business constraints. Unsafe actions (e.g., attempt limits exceeded, excessive value) trigger automatic isolation and policy blocks.
-
-\* \*\*Live Razorpay API Integration\*\*: Directly talks to Razorpay's `/v1/payment\_links` endpoint to generate authentic hosted payment checkouts carrying matching amounts and transaction IDs.
-
-\* \*\*Real-time Metric Tracking\*\*: Live calculating dashboard monitoring Capital at Risk, Recovered Revenue, Salvage Efficiency (%), and Guardrail Trip Invocations.
-
-\* \*\*Immutable Audit Trail\*\*: Append-only event logging tracking every phase transition from detection to recovery settlement.
-
-
-
-\---
-
-
-
-\## Repository Structure
-
-
-
-Razorpay\_recovery\_AI/
-
+Razorpay_recovery_AI/
 ├── backend/
-
-│   ├── models/                 # SQLAlchemy schemas \& Pydantic validation
-
-│   ├── routers/                # API route definitions (/api/recovery, /api/dashboard)
-
+│   ├── models/
+│   │   └── transaction.py          # SQLAlchemy models & Pydantic validation schemas
+│   ├── routers/
+│   │   ├── transactions.py         # Transaction stream endpoints
+│   │   └── recovery.py             # Diagnostic & execution endpoints
 │   ├── services/
-
-│   │   ├── ai\_service.py       # Diagnostic inference \& root-cause classifier
-
-│   │   ├── policy\_service.py   # Deterministic boundary check \& safety thresholds
-
-│   │   ├── razorpay\_service.py # Official Razorpay API integration client
-
-│   │   └── recovery\_service.py # Orchestrator linking state transitions
-
-│   ├── .python-version         # Pinned Python 3.11 runtime definition
-
-│   ├── config.py               # Pydantic environment configuration
-
-│   ├── database.py             # Database engine \& session maker
-
-│   ├── main.py                 # FastAPI application entry \& CORS middleware
-
-│   └── requirements.txt        # Production dependency specifications
-
+│   │   ├── ai_service.py           # Probabilistic diagnostic & heuristic inference engine
+│   │   ├── policy_service.py       # Deterministic guardrails & threshold enforcement
+│   │   ├── razorpay_service.py     # Live Razorpay REST client (Payment Links generation)
+│   │   └── recovery_service.py     # End-to-end lifecycle orchestrator
+│   ├── .python-version             # Pinned Python 3.11 runtime specification
+│   ├── config.py                   # Environment configuration & credential management
+│   ├── database.py                 # SQLite database engine initialization
+│   ├── main.py                     # FastAPI application setup & CORS configuration
+│   └── requirements.txt            # Pinned backend dependencies
 ├── frontend/
-
-│   ├── public/                 # Favicons \& static assets
-
+│   ├── public/                     # Static icons and assets
 │   ├── src/
+│   │   ├── components/
+│   │   │   ├── Header.jsx          # System status & batch simulation trigger
+│   │   │   ├── MetricsRail.jsx     # Real-time financial KPI summary cards
+│   │   │   ├── TransactionList.jsx # Transaction stream with status filtering
+│   │   │   ├── Stepper.jsx         # 4-stage visual execution progress stepper
+│   │   │   ├── DiagnosticCard.jsx  # AI root cause & salvage probability card
+│   │   │   ├── GuardrailCard.jsx   # Deterministic guardrail approval & link trigger
+│   │   │   └── AuditLog.jsx        # Monospaced immutable ledger log
+│   │   ├── App.jsx                 # Central state manager & layout shell
+│   │   ├── index.css               # Global CSS & theme styles
+│   │   └── main.jsx                # React root mount
+│   ├── index.html                  # HTML entrypoint
+│   ├── package.json                # Frontend scripts and dependencies
+│   └── vite.config.js              # Vite server & proxy configuration
+└── README.md                       # Complete project documentation
 
-│   │   ├── components/         # Reusable UI components (Stream, Stepper, Logs, Rail)
+---
 
-│   │   ├── App.jsx             # Main interactive dashboard container
+## Local Development & Setup Guide
 
-│   │   ├── index.css           # Tailwind / Custom dark-mode terminal styles
+### 1. Prerequisites
+* Python 3.10 or 3.11 installed
+* Node.js 18+ and npm installed
+* A Razorpay account with Test Mode Key ID and Key Secret
 
-│   │   └── main.jsx            # React root mount point
+---
 
-│   ├── index.html              # HTML shell
-
-│   ├── package.json            # Node dependencies and build scripts
-
-│   └── vite.config.js          # Vite build configuration
-
-└── README.md                   # Project documentation \& operational manual
-
-
-
-
-
-\---
-
-
-
-\## Local Setup \& Installation
-
-
-
-\### Prerequisites
-
-\* Python 3.10 or 3.11
-
-\* Node.js 18+ and npm
-
-\* Razorpay Test Mode API credentials
-
-
-
-\### 1. Backend Configuration
-
-
-
-```bash
+### 2. Backend Setup
 
 cd backend
-
 python -m venv venv
 
+# Windows:
+venv\Scripts\activate
 
-
-\# Windows
-
-venv\\Scripts\\activate
-
-
-
-\# macOS / Linux
-
+# macOS / Linux:
 source venv/bin/activate
-
-
 
 pip install -r requirements.txt
 
-Create a .env file in backend/:
+Create an environment file at backend/.env:
+RAZORPAY_KEY_ID=your_razorpay_key_id_here
+RAZORPAY_KEY_SECRET=your_razorpay_key_secret_here
 
-
-
-Code snippet
-
-RAZORPAY\_KEY\_ID=rzp\_test\_YOUR\_KEY\_ID
-
-RAZORPAY\_KEY\_SECRET=YOUR\_KEY\_SECRET
-
-DATABASE\_URL=sqlite:///./recovery.db
-
-Start the FastAPI server:
-
-
-
-Bash
-
+Start the FastAPI application:
 uvicorn main:app --reload --port 8000
 
-Backend will be active at http://127.0.0.1:8000 (Docs: http://127.0.0.1:8000/docs).
+The API will be available at http://127.0.0.1:8000 (Interactive docs: http://127.0.0.1:8000/docs).
 
+---
 
-
-2\. Frontend Configuration
-
-Open a new terminal:
-
-
-
-Bash
+### 3. Frontend Setup
 
 cd frontend
-
 npm install
 
-Create a .env file in frontend/:
-
-
-
-Code snippet
-
-VITE\_API\_BASE\_URL=\[http://127.0.0.1:8000](http://127.0.0.1:8000)
+Create an environment file at frontend/.env:
+VITE_API_BASE_URL=http://localhost:8000
 
 Start the development server:
-
-
-
-Bash
-
 npm run dev
 
-Open http://localhost:5173/ in your browser.
+Open http://localhost:5173 in your browser.
 
+---
 
+## Interactive Verification Walkthrough
 
-Tech Stack
-
-Backend: Python, FastAPI, SQLAlchemy, SQLite, Pydantic, Requests
-
-
-
-Frontend: React, Vite, Lucide Icons, TailwindCSS
-
-
-
-Gateway: Razorpay Payment Links API (v1)
-
-
-
-Cloud Infrastructure: Render (FastAPI Web Service), Vercel (Edge SPA Hosting)
-
+1. **Populate Pipeline**: Click **RUN BATCH SIMULATION (50 TXNS)** in the top right to generate a diverse stream of transaction failures.
+2. **Run AI Diagnostics**: Select an unhandled `FAILED` transaction from the left-hand stream. Click **Invoke Diagnostic** to view the classified root cause and salvage probability score.
+3. **Evaluate Guardrails**: Click **Evaluate & Dispatch**. The deterministic policy engine checks retry boundaries.
+4. **Trigger Payment**: Click **Open Razorpay Payment Link** to open the live, hosted Razorpay test checkout page pre-filled with the exact transaction value.
+5. **Reconcile Settlement**: Click **Mark Paid** on the dashboard to observe the live updates to Recovered Revenue, Salvage Efficiency, and the append-only Immutable Audit Log.
