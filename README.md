@@ -77,6 +77,7 @@ Transactions proceed through a deterministic finite-state machine:
 
 ## Project Repository Structure
 
+```text
 Razorpay_recovery_AI/
 ├── backend/
 │   ├── models/
@@ -112,6 +113,7 @@ Razorpay_recovery_AI/
 │   ├── package.json                # Frontend scripts and dependencies
 │   └── vite.config.js              # Vite server & proxy configuration
 └── README.md                       # Complete project documentation
+```
 
 ---
 
@@ -126,6 +128,7 @@ Razorpay_recovery_AI/
 
 ### 2. Backend Setup
 
+```bash
 cd backend
 python -m venv venv
 
@@ -136,30 +139,45 @@ venv\Scripts\activate
 source venv/bin/activate
 
 pip install -r requirements.txt
+```
 
-Create an environment file at backend/.env:
+Create an environment file at `backend/.env`:
+
+```env
 RAZORPAY_KEY_ID=your_razorpay_key_id_here
 RAZORPAY_KEY_SECRET=your_razorpay_key_secret_here
+```
 
 Start the FastAPI application:
-uvicorn main:app --reload --port 8000
 
-The API will be available at http://127.0.0.1:8000 (Interactive docs: http://127.0.0.1:8000/docs).
+```bash
+uvicorn main:app --reload --port 8000
+```
+
+The API will be available at `http://127.0.0.1:8000` (Interactive docs: `http://127.0.0.1:8000/docs`).
 
 ---
 
 ### 3. Frontend Setup
 
+```bash
 cd frontend
 npm install
+```
 
-Create an environment file at frontend/.env:
+Create an environment file at `frontend/.env`:
+
+```env
 VITE_API_BASE_URL=http://localhost:8000
+```
 
 Start the development server:
-npm run dev
 
-Open http://localhost:5173 in your browser.
+```bash
+npm run dev
+```
+
+Open `http://localhost:5173` in your browser.
 
 ---
 
